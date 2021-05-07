@@ -1,0 +1,9 @@
+1:Naufal
+2:Yahudi
+3:Nasrani
+
+4:yuhu
+5:tes
+6:alham
+7:dul
+8:lillah
