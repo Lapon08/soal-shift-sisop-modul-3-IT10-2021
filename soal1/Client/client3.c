@@ -247,31 +247,6 @@ int main(int argc, char const *argv[])
 
                 printf("[+]File data sent successfully.\n");
 
-                //buffer2[strcspn(buffer2, "\n")] = 0;
-                // printf("%stes",filenamepath);
-
-                //printf("the file was sent successfully");
-                // fp = fopen(filenamepath, "r");
-                // if (fp == NULL)
-                // {
-                //     perror("[-]Error in reading file.");
-                //     return 0;
-                // }
-                // int n;
-                // char data[1024] = {0};
-
-                // while (fgets(data, 1024, fp) != NULL)
-                // {
-                //     if (send(sock, data, sizeof(data), 0) == -1)
-                //     {
-                //         perror("[-]Error in sending file.");
-                //         exit(1);
-                //     }
-                // }
-                // bzero(data, 1024);
-
-                //send_file(fp, sock);
-                //printf("[+]File data sent successfully.\n");
             }
             else if (strcmp(buffer2, "delete\n") == 0)
             {
