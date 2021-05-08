@@ -17,7 +17,7 @@ char nama[20][100];
 char namafull[20][100];
 int jumlahData = 0;
 char caristring[20][100];
-
+char cookie[100];
 int checkLogin(char *kredensial)
 {
     FILE *fptr;
@@ -31,7 +31,7 @@ int checkLogin(char *kredensial)
            presence would allow to handle lines longer that sizeof(line) */
         if (strcmp(kredensial, line) == 0)
         {
-
+            strcpy(cookie,kredensial);
             return 1;
         }
     }
@@ -39,14 +39,22 @@ int checkLogin(char *kredensial)
     return 0;
 }
 
-void registerAkun(char *kredensial)
+void runningLog(char *message){
+    FILE *fp;
+    fp = fopen("running.log","a+");
+    strtok(cookie,"\n");
+    fprintf(fp,"%s (%s)\n",message,cookie);
+    fclose(fp);
+}
+
+void registerAkun(char *kredensial,char *password)
 {
 
     FILE *fptr;
 
     fptr = fopen("akun.txt", "a+");
 
-    fprintf(fptr, "%s", kredensial);
+    fprintf(fptr, "%s:%s\n", kredensial,password);
     fclose(fptr);
 }
 
@@ -55,17 +63,20 @@ void createFolderFile()
     mkdir("FILES", 0777);
 }
 
-void send_file(FILE *fp, int sockfd){
-  int n;
-  char data[1024] = {0};
+void send_file(FILE *fp, int sockfd)
+{
+    int n;
+    char data[1024] = {0};
 
-  while(fgets(data, 1024, fp) != NULL) {
-    if (send(sockfd, data, sizeof(data), 0) == -1) {
-      perror("[-]Error in sending file.");
-      exit(1);
+    while (fgets(data, 1024, fp) != NULL)
+    {
+        if (send(sockfd, data, sizeof(data), 0) == -1)
+        {
+            perror("[-]Error in sending file.");
+            exit(1);
+        }
+        bzero(data, 1024);
     }
-    bzero(data, 1024);
-  }
 }
 
 void addtoDatabase(char *publisher, char *tahun_publikasi, char *filenamepath)
@@ -77,6 +88,9 @@ void addtoDatabase(char *publisher, char *tahun_publikasi, char *filenamepath)
     fp = fopen("files.tsv", "a+");
     fprintf(fp, "%s\t%s\t%s\n", publisher, tahun_publikasi, tmp);
     fclose(fp);
+    char message[30] ="Tambah: ";
+    strcat(message,filenamepath);
+    runningLog(message);
 }
 
 void readDatabase()
@@ -120,7 +134,7 @@ void readDatabase()
         strcpy(namafull[i], nama[i]);
         strcat(namafull[i], ".");
         strcat(namafull[i], ekstensi[i]);
-        printf("%d -> %s -> %s -> %s -> %s -> %s -> %s", i, namafull[i], line[i], publisherbuku[i], tahunpublishbuku[i], fullpath[i], ekstensi[i]);
+        //printf("%d -> %s -> %s -> %s -> %s -> %s -> %s", i, namafull[i], line[i], publisherbuku[i], tahunpublishbuku[i], fullpath[i], ekstensi[i]);
         i++;
         jumlahData++;
     }
@@ -164,17 +178,16 @@ void readMessage(int new_socket)
 void deleteFile(int new_socket, char *findthisfile)
 {
     printf("%s\n", findthisfile);
-    char *p;
     char see[1024] = {0};
     int i = 0;
-    int pos = 0;
+    //int pos = 0;
     int checkfile = 0;
     int position = 0;
     for (int i = 0; i < jumlahData; i++)
     {
         if (strcmp(namafull[i], findthisfile) == 0)
         {
-            pos += sprintf(&see[pos], "Nama: %s\nPublisher: %s\nTahun publishing: %s\nEkstensi File : %sFilepath : %s\n", nama[i], publisherbuku[i], tahunpublishbuku[i], ekstensi[i], fullpath[i]);
+            //pos += sprintf(&see[pos], "Nama: %s\nPublisher: %s\nTahun publishing: %s\nEkstensi File : %sFilepath : %s\n", nama[i], publisherbuku[i], tahunpublishbuku[i], ekstensi[i], fullpath[i]);
             checkfile = 1;
             position = i;
         }
@@ -198,13 +211,18 @@ void deleteFile(int new_socket, char *findthisfile)
             }
         }
         // pesan delete berhasil
+        char pesan[150] = {0};
+        sprintf(pesan,"Hapus : %s",namafull[position]);
+        runningLog(pesan);
         fclose(fp);
-        send(new_socket, see, 1024, 0);
+        char *message = "Berhasil\n";
+        send(new_socket, message, strlen(message), 0);
         memset(see, 0, 1024);
     }
     else
     {
-        // pesan file tidak ada
+        char *message = "Gagal\n";
+        send(new_socket, message, strlen(message), 0);
     }
 }
 void findstring(int new_socket, char *findthisstring)
@@ -294,49 +312,61 @@ int main(int argc, char const *argv[])
         int otentikasi = 0;
         while (otentikasi == 0)
         {
-            char *hello = "Server : Selamat Datang\nMasukkan Mode: Login -> l , Register -> r , Quit -> q";
-            send(new_socket, hello, strlen(hello), 0);
-            memset(buffer, 0, 1024);
-            valread = read(new_socket, buffer, 1024);
+            sendMessage(new_socket, "Server : Masukkan Mode: Login -> l , Register -> r , Quit -> q");
+            char mode[1024] = {0};
+            valread = read(new_socket, mode, 1024);
             // login
 
-            if (strcmp(buffer, "l\n") == 0)
+            if (strcmp(mode, "l\n") == 0)
             {
-                memset(buffer, 0, 1024);
+                memset(mode, 0, 1024);
                 // mengirim pesan
-                char *message = "Server :[LOGIN] Masukkan id dan password (id:password): ";
-                send(new_socket, message, strlen(message), 0);
+                sendMessage(new_socket, "Server :[LOGIN] Masukkan id dan password (id:password): ");
                 // menerima kredensial
+                char kredensial[1024] = {0};
                 valread = read(new_socket, kredensial, 1024);
-                printf("[LOGIN] %s", kredensial);
+
                 // printf("%s", buffer);
                 // Check login
+
                 otentikasi = checkLogin(kredensial);
+                memset(kredensial, 0, 1024);
                 char isotentikasi[2];
                 sprintf(isotentikasi, "%d", otentikasi);
                 // kirim otentikasi
                 send(new_socket, isotentikasi, strlen(isotentikasi), 0);
-                memset(buffer, 0, 1024);
-            }
-            else if (strcmp(buffer, "r\n") == 0)
-            {
-                memset(buffer, 0, 1024);
-                // mengirim pesan
-                char *message = "Server :[REGISTER] Masukkan id dan password (id:password): ";
-                send(new_socket, message, strlen(message), 0);
-                // menerima kredensial
-                valread = read(new_socket, buffer, 1024);
-                printf("[Register] %s", buffer);
-                registerAkun(buffer);
-                memset(buffer, 0, 1024);
+                memset(isotentikasi, 0, 2);
 
-                message = "Server :[REGISTER] Register Berhasil Dilakukan\n";
-                send(new_socket, message, strlen(message), 0);
+                memset(buffer, 0, 1024);
             }
-            else if (strcmp(buffer, "q\n") == 0)
+            else if (strcmp(mode, "r\n") == 0)
+            {
+                memset(mode, 0, 1024);
+                    // Id
+                    char *message = "[Register]Id: ";
+                    send(new_socket, message, strlen(message), 0);
+                    char kredensial[1024] = {0};
+                    read(new_socket, kredensial, 1024);
+                    //printf("%s", kredensial);
+                    kredensial[strcspn(kredensial, "\n")] = 0;
+                    // Password
+                    message = "[Register]Password: ";
+                    send(new_socket, message, strlen(message), 0);
+                    char password[1024] = {0};
+                    read(new_socket, password, 1024);
+                    password[strcspn(password, "\n")] = 0;
+                registerAkun(kredensial,password);
+                
+                memset(kredensial, 0, 1024);
+                memset(password, 0, 1024);
+                //sendMessage(new_socket, "Server :[REGISTER] Register Berhasil Dilakukan");
+            }
+            else if (strcmp(mode, "q\n") == 0)
             {
                 break;
             }
+            memset(buffer, 0, 1024);
+            memset(mode, 0, 1024);
         }
         if (otentikasi)
         {
@@ -419,7 +449,6 @@ int main(int argc, char const *argv[])
                     char findthisfile[100] = {0};
                     // testing
                     read(new_socket, findthisfile, 100);
-
                     deleteFile(new_socket, findthisfile);
                     memset(findthisfile, 0, 100);
                 }
@@ -466,27 +495,28 @@ int main(int argc, char const *argv[])
                             exit(1);
                         }
 
-                        fseek(fp,0,SEEK_END);
-                         int fsize = ftell(fp);
+                        fseek(fp, 0, SEEK_END);
+                        int fsize = ftell(fp);
                         rewind(fp);
-                        fread(file_content,1,fsize,fp);
+                        fread(file_content, 1, fsize, fp);
                         fclose(fp);
 
                         // send file size
-                        sprintf(file_length,"%d", fsize);
-                        send(new_socket,file_length,sizeof(file_length),0);
+                        sprintf(file_length, "%d", fsize);
+                        send(new_socket, file_length, sizeof(file_length), 0);
                         sleep(1);
 
                         // send file content
 
-                        for (long i = 0; i < fsize; i+=1024)
+                        for (long i = 0; i < fsize; i += 1024)
                         {
-                            memset(buffer,0,sizeof(buffer));
-                            sprintf(buffer,"%.*s",fsize <1024 ? fsize :abs(fsize-i) < 1024 ? abs(fsize -1):1024,file_content+i);
-                            send(new_socket,file_length,sizeof(file_length),0);
+                            memset(buffer, 0, sizeof(buffer));
+                            sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
+                                                                                                 : 1024,
+                                    file_content + i);
+                            send(new_socket, file_length, sizeof(file_length), 0);
                         }
-                        
-                        
+
                         printf("[+]File data sent successfully.\n");
 
                         printf("[+]Closing the connection.\n");
@@ -505,5 +535,3 @@ int main(int argc, char const *argv[])
         }
     }
 }
-
-    

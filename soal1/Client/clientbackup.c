@@ -22,23 +22,26 @@ void send_file(FILE *fp, int sockfd)
     bzero(data, 1024);
     //}
 }
-void write_file(int sockfd){
-  int n;
-  FILE *fp;
-  char *filename = "recv.txt";
-  char buffer[1024];
+void write_file(int sockfd)
+{
+    int n;
+    FILE *fp;
+    char *filename = "recv.txt";
+    char buffer[1024];
 
-  fp = fopen(filename, "w+");
-  while (1) {
-    n = read(sockfd, buffer, 1024);
-    if (n <= 0){
-      break;
-      return;
+    fp = fopen(filename, "w+");
+    while (1)
+    {
+        n = read(sockfd, buffer, 1024);
+        if (n <= 0)
+        {
+            break;
+            return;
+        }
+        fprintf(fp, "%s", buffer);
+        bzero(buffer, 1024);
     }
-    fprintf(fp, "%s", buffer);
-    bzero(buffer, 1024);
-  }
-  return;
+    return;
 }
 void readMessage(int new_socket)
 {
@@ -85,210 +88,232 @@ int main(int argc, char const *argv[])
     // login form
     while (otentikasi == 0)
     {
-        // selamat datang
-        read(sock, buffer, 1024);
-        printf("%s\n", buffer);
-        memset(buffer, 0, 1024);
+        char pesan[1024] = {0};
+        read(sock, pesan, 1024);
+        printf("%s\n", pesan);
+        memset(pesan, 0, 1024);
         // input mode
-        fgets(buff, 1024, stdin);
-        send(sock, buff, strlen(buff), 0);
+        char mode[1024] = {0};
+        fgets(mode, 1024, stdin);
+        send(sock, mode, strlen(mode), 0);
 
-        if (strcmp(buff, "l\n") == 0)
+        if (strcmp(mode, "l\n") == 0)
         {
             // bersihkan buffer
-            memset(buffer, 0, 1024);
-            memset(buff, 0, 1024);
             // pesan dari server
-            read(sock, buffer, 1024);
-            printf("%s\n", buffer);
-            memset(buffer, 0, 1024);
+            char pesan[1024] = {0};
+            read(sock, pesan, 1024);
+            printf("%s\n", pesan);
+            memset(pesan, 0, 1024);
             // Masukkan kredensial
-            fgets(buff, 1024, stdin);
+            char username[1024] = {0};
+            fgets(username, 1024, stdin);
+            //strtok(username,"\n");
+
             // kirim kredensial
-            send(sock, buff, strlen(buff), 0);
-            memset(buff, 0, 1024);
+            send(sock, username, strlen(username), 0);
+            memset(username, 0, 1024);
             // menerima otentikasi
             char isotentikasi[2] = {0};
             read(sock, isotentikasi, 2);
             otentikasi = atoi(isotentikasi);
             memset(isotentikasi, 0, 2);
         }
-        else if (strcmp(buff, "r\n") == 0)
+        else if (strcmp(mode, "r\n") == 0)
         {
-            // bersihkan buffer
-            memset(buffer, 0, 1024);
-            memset(buff, 0, 1024);
             // pesan dari server
-            read(sock, buffer, 1024);
-            printf("%s\n", buffer);
-            memset(buffer, 0, 1024);
+            char pesan[1024] = {0};
+            read(sock, pesan, 1024);
+            printf("%s\n", pesan);
+            memset(pesan, 0, 1024);
             // Masukkan kredensial
-            fgets(buff, 1024, stdin);
+            char username[1024] = {0};
+            fgets(username, 1024, stdin);
             // kirim kredensial
-            send(sock, buff, strlen(buff), 0);
-            memset(buff, 0, 1024);
-            read(sock, buffer, 1024);
-            printf("%s\n", buffer);
-            memset(buffer, 0, 1024);
+            send(sock, username, strlen(username), 0);
+            memset(username, 0, 1024);
+            
+                        // pesan dari server
+            char pesan2[1024] = {0};
+            read(sock, pesan2, 1024);
+            printf("%s\n", pesan2);
+            memset(pesan2, 0, 1024);
+            // Masukkan kredensial
+            char password[1024] = {0};
+            fgets(password, 1024, stdin);
+            // kirim kredensial
+            send(sock, password, strlen(password), 0);
+            memset(password, 0, 1024);
+            //char message[1024] = {0};
+            //read(sock, message, 1024);
+            //printf("%s\n", message);
+            //memset(message, 0, 1024);
         }
-        else if (strcmp(buff, "q\n") == 0)
+        else if (strcmp(mode, "q\n") == 0)
         {
             printf("Good Bye\n");
             return 0;
         }
-        if (otentikasi)
+        memset(buffer, 0, 1024);
+        memset(buff, 0, 1024);
+        memset(buffer, 0, 1024);
+        memset(buff, 0, 1024);
+    }
+    if (otentikasi)
+    {
+        int inputcommand = 1;
+        while (inputcommand)
         {
-            int inputcommand = 1;
-            while (inputcommand)
+            char pesan[300] = {0};
+            char buffer2[1024] = {0};
+            memset(buffer2, 0, 1024);
+            read(sock, pesan, 300);
+            printf("%s", pesan);
+            memset(buffer2, 0, 1024);
+            fgets(buffer2, 1024, stdin);
+            send(sock, buffer2, strlen(buffer2), 0);
+            if (strcmp(buffer2, "add\n") == 0)
             {
-                char pesan[300] = {0};
-                char buffer2[1024] = {0};
+                FILE *fp;
                 memset(buffer2, 0, 1024);
-                read(sock, pesan, 300);
-                printf("%s", pesan);
+                // publisher
+                read(sock, buffer2, 1024);
+                printf("%s", buffer2);
                 memset(buffer2, 0, 1024);
                 fgets(buffer2, 1024, stdin);
                 send(sock, buffer2, strlen(buffer2), 0);
-                if (strcmp(buffer2, "add\n") == 0)
-                {
-                    FILE *fp;
-                    memset(buffer2, 0, 1024);
-                    // publisher
-                    read(sock, buffer2, 1024);
-                    printf("%s", buffer2);
-                    memset(buffer2, 0, 1024);
-                    fgets(buffer2, 1024, stdin);
-                    send(sock, buffer2, strlen(buffer2), 0);
-                    memset(buffer2, 0, 1024);
-                    // tahun publikasi
-                    read(sock, buffer2, 1024);
-                    printf("%s", buffer2);
-                    memset(buffer2, 0, 1024);
-                    fgets(buffer2, 1024, stdin);
-                    send(sock, buffer2, strlen(buffer2), 0);
-                    memset(buffer2, 0, 1024);
-                    // filepath
-                    read(sock, buffer2, 1024);
-                    printf("%s", buffer2);
-                    memset(buffer2, 0, 1024);
-                    char filenamepath[1024] = {0};
+                memset(buffer2, 0, 1024);
+                // tahun publikasi
+                read(sock, buffer2, 1024);
+                printf("%s", buffer2);
+                memset(buffer2, 0, 1024);
+                fgets(buffer2, 1024, stdin);
+                send(sock, buffer2, strlen(buffer2), 0);
+                memset(buffer2, 0, 1024);
+                // filepath
+                read(sock, buffer2, 1024);
+                printf("%s", buffer2);
+                memset(buffer2, 0, 1024);
+                char filenamepath[1024] = {0};
 
-                    fgets(buffer2, 1024, stdin);
-                    strcpy(filenamepath, buffer2);
-                    memset(buffer2, 0, 1024);
-                    strtok(filenamepath, "\n");
-                    send(sock, filenamepath, strlen(filenamepath), 0);
+                fgets(buffer2, 1024, stdin);
+                strcpy(filenamepath, buffer2);
+                memset(buffer2, 0, 1024);
+                strtok(filenamepath, "\n");
+                send(sock, filenamepath, strlen(filenamepath), 0);
 
-                    //buffer2[strcspn(buffer2, "\n")] = 0;
-                    // printf("%stes",filenamepath);
+                //buffer2[strcspn(buffer2, "\n")] = 0;
+                // printf("%stes",filenamepath);
 
-                    //printf("the file was sent successfully");
-                    // fp = fopen(filenamepath, "r");
-                    // if (fp == NULL)
-                    // {
-                    //     perror("[-]Error in reading file.");
-                    //     return 0;
-                    // }
-                    // int n;
-                    // char data[1024] = {0};
+                //printf("the file was sent successfully");
+                // fp = fopen(filenamepath, "r");
+                // if (fp == NULL)
+                // {
+                //     perror("[-]Error in reading file.");
+                //     return 0;
+                // }
+                // int n;
+                // char data[1024] = {0};
 
-                    // while (fgets(data, 1024, fp) != NULL)
-                    // {
-                    //     if (send(sock, data, sizeof(data), 0) == -1)
-                    //     {
-                    //         perror("[-]Error in sending file.");
-                    //         exit(1);
-                    //     }
-                    // }
-                    // bzero(data, 1024);
+                // while (fgets(data, 1024, fp) != NULL)
+                // {
+                //     if (send(sock, data, sizeof(data), 0) == -1)
+                //     {
+                //         perror("[-]Error in sending file.");
+                //         exit(1);
+                //     }
+                // }
+                // bzero(data, 1024);
 
-                    //send_file(fp, sock);
-                    //printf("[+]File data sent successfully.\n");
-                }
-                else if (strcmp(buffer2, "delete\n") == 0)
-                {
-                    readMessage(sock);
-                    // input string
-                    char inputString[100] = {0};
-                    fgets(inputString, 100, stdin);
-                    inputString[strcspn(inputString, "\n")] = 0;
-                    send(sock, inputString, strlen(inputString), 0);
-                    memset(inputString, 0, 100);
-                    char see[1024] = {0};
-                    memset(see, 0, 1024);
-                    // Read Database
-                    read(sock, see, 1024);
-                    printf("%s", see);
-                    memset(see, 0, 1024);
-                }
-                else if (strcmp(buffer2, "see\n") == 0)
-                {
-                    memset(buffer2, 0, 1024);
-                    char see[1024] = {0};
-                    memset(see, 0, 1024);
-                    // Read Database
-                    read(sock, see, 1024);
-                    printf("%s", see);
-                    memset(see, 0, 1024);
-                    //memset(buffer2, 0, 1024);
-                }
-                else if (strcmp(buffer2, "find\n") == 0)
-                {
-                    readMessage(sock);
-                    // input string
-                    char inputString[100] = {0};
-                    fgets(inputString, 100, stdin);
-                    inputString[strcspn(inputString, "\n")] = 0;
-                    send(sock, inputString, strlen(inputString), 0);
-                    memset(inputString, 0, 100);
-                    char see[1024] = {0};
-                    memset(see, 0, 1024);
-                    // Read Database
-                    read(sock, see, 1024);
-                    printf("%s", see);
-                    memset(see, 0, 1024);
-                }
-                else if (strcmp(buffer2, "download\n") == 0)
-                {
-                    readMessage(sock);
-                    // input string
-                    char inputString[100] = {0};
-                    fgets(inputString, 100, stdin);
-                    inputString[strcspn(inputString, "\n")] = 0;
-                    send(sock, inputString, strlen(inputString), 0);
-                    //memset(inputString, 0, 100);
-                    char file_length[1024] = {0};
-                    char buffer[1024] = {0};
-                    char file_content[1024] = {0};
-
-                    long fsize;
-                    // recieve file size
-                    read(sock,file_length,01024);
-                    fsize = strtol(file_length,NULL,0);
-
-                    // recieve file content
-                    for (long i = 0; i < __FD_SETSIZE; i+=1024)
-                    {
-                        memset(buffer,0,sizeof(buffer));
-                        read(sock,buffer,1024);
-                        strcat(file_content,buffer);
-                    }
-
-                    FILE *fp;
-                    fp = fopen(inputString,"w");
-                    fprintf(fp, "%s",file_content);
-                    fclose(fp);
-                    
-
-                    write_file(sock);
-                }
-                else if (strcmp(buffer2, "quit\n") == 0)
-                {
-                    printf("Good Bye\n");
-                    return 0;
-                }
+                //send_file(fp, sock);
+                //printf("[+]File data sent successfully.\n");
             }
+            else if (strcmp(buffer2, "delete\n") == 0)
+            {
+                memset(buffer2, 0, 1024);
+                readMessage(sock);
+                // input string
+                char iniinput[100] = {0};
+                fgets(iniinput, 100, stdin);
+                iniinput[strcspn(iniinput, "\n")] = 0;
+                send(sock, iniinput, strlen(iniinput), 0);
+                memset(iniinput, 0, 100);
+                char delet[10] = {0};
+                memset(delet, 0, 10);
+                // Read Database
+                read(sock, delet, 10);
+                printf("%s", delet);
+                memset(delet, 0, 10);
+            }
+            else if (strcmp(buffer2, "see\n") == 0)
+            {
+                memset(buffer2, 0, 1024);
+                char see[1024] = {0};
+                memset(see, 0, 1024);
+                // Read Database
+                read(sock, see, 1024);
+                printf("%s", see);
+                memset(see, 0, 1024);
+                //memset(buffer2, 0, 1024);
+            }
+            else if (strcmp(buffer2, "find\n") == 0)
+            {
+                memset(buffer2, 0, 1024);
+                readMessage(sock);
+                // input string
+                char inputString[100] = {0};
+                fgets(inputString, 100, stdin);
+                inputString[strcspn(inputString, "\n")] = 0;
+                send(sock, inputString, strlen(inputString), 0);
+                memset(inputString, 0, 100);
+                char see[1024] = {0};
+                memset(see, 0, 1024);
+                // Read Database
+                read(sock, see, 1024);
+                printf("%s", see);
+                memset(see, 0, 1024);
+            }
+            else if (strcmp(buffer2, "download\n") == 0)
+            {
+                readMessage(sock);
+                // input string
+                char inputString[100] = {0};
+                fgets(inputString, 100, stdin);
+                inputString[strcspn(inputString, "\n")] = 0;
+                send(sock, inputString, strlen(inputString), 0);
+                //memset(inputString, 0, 100);
+                char file_length[1024] = {0};
+                char buffer[1024] = {0};
+                char file_content[1024] = {0};
+
+                long fsize;
+                // recieve file size
+                read(sock, file_length, 01024);
+                fsize = strtol(file_length, NULL, 0);
+
+                // recieve file content
+                for (long i = 0; i < __FD_SETSIZE; i += 1024)
+                {
+                    memset(buffer, 0, sizeof(buffer));
+                    read(sock, buffer, 1024);
+                    strcat(file_content, buffer);
+                }
+
+                FILE *fp;
+                fp = fopen(inputString, "w");
+                fprintf(fp, "%s", file_content);
+                fclose(fp);
+
+                write_file(sock);
+            }
+            else if (strcmp(buffer2, "quit\n") == 0)
+            {
+                printf("Good Bye\n");
+                return 0;
+            }
+            memset(buffer2, 0, 1024);
         }
+        
     }
 
     printf("Good Bye\n");
