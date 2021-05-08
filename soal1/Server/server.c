@@ -143,7 +143,7 @@ void readDatabase()
         strcpy(namafull[i], nama[i]);
         strcat(namafull[i], ".");
         strcat(namafull[i], ekstensi[i]);
-        //printf("%d -> %s -> %s -> %s -> %s -> %s -> %s", i, namafull[i], line[i], publisherbuku[i], tahunpublishbuku[i], fullpath[i], ekstensi[i]);
+        printf("%d -> %s -> %s -> %s -> %s -> %s -> %s", i, namafull[i], line[i], publisherbuku[i], tahunpublishbuku[i], fullpath[i], ekstensi[i]);
         i++;
         jumlahData++;
     }
