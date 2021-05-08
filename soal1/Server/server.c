@@ -91,7 +91,7 @@ void addtoDatabase(int new_socket, char *publisher, char *tahun_publikasi, char 
     char tmp[1024] = {0};
     strcpy(tmp, "FILES/");
     strcat(tmp, filenamepath);
-    printf("%s", tmp);
+    
     char file_length[1024] = {0}, buffer[1024] = {0}, file_content[1024] = {0};
     memset(buffer, 0, sizeof(buffer));
     long fsize;
@@ -214,18 +214,10 @@ void sendMessage(int new_socket, char *message)
 {
     send(new_socket, message, strlen(message), 0);
 }
-void readMessage(int new_socket)
-{
-    char readmessage[1024] = {0};
-    memset(readmessage, 0, 1024);
-    // tahun publikasi
-    read(new_socket, readmessage, 1024);
-    printf("%s", readmessage);
-    memset(readmessage, 0, 1024);
-}
+
 void deleteFile(int new_socket, char *findthisfile)
 {
-    printf("%s\n", findthisfile);
+    
     char see[1024] = {0};
     int i = 0;
     //int pos = 0;
@@ -282,7 +274,7 @@ void deleteFile(int new_socket, char *findthisfile)
 }
 void findstring(int new_socket, char *findthisstring)
 {
-    printf("%s\n", findthisstring);
+    
     char *p;
     char see[1024] = {0};
     int i = 0;
@@ -332,7 +324,7 @@ void sendFile(int new_socket, int fsize, char *file_content)
     memset(buffer, 0, sizeof(buffer));
     memset(file_content, 0, sizeof(file_content));
 
-    printf("[+]File data sent successfully.\n");
+    
 }
 
 int main(int argc, char const *argv[])
@@ -524,7 +516,7 @@ int main(int argc, char const *argv[])
                     // testing
                     read(new_socket, findthisstring, 100);
                     strtok(findthisstring, "\n");
-                    printf("%s\n", findthisstring);
+                   
                     filecheck = checkDownloadfile(new_socket, findthisstring);
 
                     char isfileready[2];
