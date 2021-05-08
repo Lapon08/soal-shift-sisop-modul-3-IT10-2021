@@ -7,7 +7,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#define PORT 8080
+#define PORT 4444
 char filename[20][100];
 char publisherbuku[20][100];
 char tahunpublishbuku[20][100];
@@ -18,6 +18,7 @@ char namafull[20][100];
 int jumlahData = 0;
 char caristring[20][100];
 char cookie[100];
+
 int checkLogin(char *kredensial, char *password)
 {
     FILE *fptr;
@@ -28,8 +29,6 @@ int checkLogin(char *kredensial, char *password)
     sprintf(user, "%s:%s", kredensial, password);
     while (fgets(line, sizeof(line) - 1, fptr))
     {
-        /* note that fgets don't strip the terminating \n, checking its
-           presence would allow to handle lines longer that sizeof(line) */
         if (strcmp(user, line) == 0)
         {
             strcpy(cookie, user);
@@ -53,9 +52,7 @@ void registerAkun(char *kredensial, char *password)
 {
 
     FILE *fptr;
-
     fptr = fopen("akun.txt", "a+");
-
     fprintf(fptr, "%s:%s\n", kredensial, password);
     fclose(fptr);
 }
@@ -63,22 +60,9 @@ void registerAkun(char *kredensial, char *password)
 void createFolderFile()
 {
     mkdir("FILES", 0777);
-}
-
-void send_file(FILE *fp, int sockfd)
-{
-    int n;
-    char data[1024] = {0};
-
-    while (fgets(data, 1024, fp) != NULL)
-    {
-        if (send(sockfd, data, sizeof(data), 0) == -1)
-        {
-            perror("[-]Error in sending file.");
-            exit(1);
-        }
-        bzero(data, 1024);
-    }
+        FILE *fp;
+    fp = fopen("files.tsv", "a+");
+    fclose(fp);
 }
 
 void addtoDatabase(int new_socket, char *publisher, char *tahun_publikasi, char *filenamepath)
@@ -344,7 +328,9 @@ int main(int argc, char const *argv[])
         int otentikasi = 0;
         while (otentikasi == 0)
         {
-            sendMessage(new_socket, "Server : Masukkan Mode: Login -> l , Register -> r , Quit -> q");
+            //sendMessage(new_socket, "Server : Masukkan Mode: Login -> l , Register -> r , Quit -> q");
+                            char *pesan = "\nServer : Masukkan Mode: Login -> l , Register -> r , Quit -> q: ";
+                send(new_socket, pesan, strlen(pesan), 0);
             char mode[1024] = {0};
             valread = read(new_socket, mode, 1024);
             // login
@@ -410,8 +396,9 @@ int main(int argc, char const *argv[])
             int inputcommand = 1;
             while (inputcommand)
             {
-                char *lohe = " Server:[APP] command : add, download, delete, find, see, quit\n";
-                send(new_socket, lohe, strlen(lohe), 0);
+                //sendMessage(new_socket, "Server:[APP] command : add, download, delete, find, see, quit");
+                char *pesan = "\nServer:[APP] command : add, download, delete, find, see, quit: \n";
+                send(new_socket, pesan, strlen(pesan), 0);
                 char buffer2[1024] = {0};
                 read(new_socket, buffer2, 1024);
                 if (strcmp(buffer2, "add\n") == 0)
@@ -448,33 +435,6 @@ int main(int argc, char const *argv[])
                     }
                     strcpy(filenamepath, temp2[x - 1]);
                     memset(temp, 0, 1024);
-                    // int n;
-                    // FILE *fp;
-                    // char bismillah[1024] = {0};
-
-                    // fp = fopen(filenamepath, "w+");
-                    // fflush(fp);
-                    // while (1)
-                    // {
-
-                    //     n = recv(new_socket, bismillah, 1024, 0);
-                    //     if (n <= 0)
-                    //     {
-                    //         break;
-                    //     }
-                    //     fprintf(fp, "%s", bismillah);
-                    //     printf("%s", bismillah);
-                    // }
-                    // bzero(buffer, 1024);
-
-                    // fclose(fp);
-
-                    //strtok(filenamepath,"\n");
-                    //printf("%s -> %s -> %s", publisher, tahun_publikasi, filenamepath);
-                    //write_file(new_socket, filenamepath);
-                    // memset(publisher, 0, 1024);
-                    // memset(tahun_publikasi, 0, 1024);
-                    // memset(filenamepath, 0, 1024);
 
                     addtoDatabase(new_socket, publisher, tahun_publikasi, filenamepath);
                 }

@@ -5,49 +5,13 @@
 #include <string.h>
 #include <unistd.h>
 #include <arpa/inet.h>
-#define PORT 8080
+#define PORT 4444
 
-void send_file(FILE *fp, int sockfd)
-{
-    int n;
-    char data[1024] = {0};
-    fgets(data, 1024, fp);
-    //while (fgets(data, 1024, fp) != NULL)
-    //{
-    if (send(sockfd, data, sizeof(data), 0) == -1)
-    {
-        perror("[-]Error in sending file.");
-        exit(1);
-    }
-    bzero(data, 1024);
-    //}
-}
-void write_file(int sockfd)
-{
-    int n;
-    FILE *fp;
-    char *filename = "recv.txt";
-    char buffer[1024];
 
-    fp = fopen(filename, "w+");
-    while (1)
-    {
-        n = read(sockfd, buffer, 1024);
-        if (n <= 0)
-        {
-            break;
-            return;
-        }
-        fprintf(fp, "%s", buffer);
-        bzero(buffer, 1024);
-    }
-    return;
-}
 void readMessage(int new_socket)
 {
     char readmessage[1024] = {0};
     memset(readmessage, 0, 1024);
-    // tahun publikasi
     read(new_socket, readmessage, 1024);
     printf("%s", readmessage);
     memset(readmessage, 0, 1024);
@@ -154,10 +118,7 @@ int main(int argc, char const *argv[])
             // kirim kredensial
             send(sock, password, strlen(password), 0);
             memset(password, 0, 1024);
-            //char message[1024] = {0};
-            //read(sock, message, 1024);
-            //printf("%s\n", message);
-            //memset(message, 0, 1024);
+
         }
         else if (strcmp(mode, "q\n") == 0)
         {
@@ -179,7 +140,7 @@ int main(int argc, char const *argv[])
             memset(buffer2, 0, 1024);
             read(sock, pesan, 300);
             printf("%s", pesan);
-            memset(buffer2, 0, 1024);
+            memset(pesan, 0, 300);
             fgets(buffer2, 1024, stdin);
             send(sock, buffer2, strlen(buffer2), 0);
             if (strcmp(buffer2, "add\n") == 0)
@@ -349,7 +310,6 @@ int main(int argc, char const *argv[])
     }
 
     printf("Good Bye\n");
-    // valread = read( sock , buffer, 1024);
 
     return 0;
 }
