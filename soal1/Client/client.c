@@ -16,6 +16,24 @@ void readMessage(int new_socket)
     memset(readmessage, 0, 1024);
 }
 
+void sendFile(int new_socket, int fsize, char *file_content)
+{
+    char buffer[1024] = {0};
+    for (int i = 0; i < fsize; i += 1024)
+    {
+
+        sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
+                                                                             : 1024,
+                file_content + i);
+        send(new_socket, buffer, sizeof(buffer), 0);
+        memset(buffer, 0, sizeof(buffer));
+    }
+    memset(buffer, 0, sizeof(buffer));
+    memset(file_content, 0, sizeof(file_content));
+
+    printf("[+]File data sent successfully.\n");
+}
+
 int main(int argc, char const *argv[])
 {
     struct sockaddr_in address;
@@ -28,7 +46,6 @@ int main(int argc, char const *argv[])
 
     if ((sock = socket(AF_INET, SOCK_STREAM, 0)) < 0)
     {
-        printf("\n Socket creation error \n");
         return -1;
     }
 
@@ -39,13 +56,11 @@ int main(int argc, char const *argv[])
 
     if (inet_pton(AF_INET, "127.0.0.1", &serv_addr.sin_addr) <= 0)
     {
-        printf("\nInvalid address/ Address not supported \n");
         return -1;
     }
 
     if (connect(sock, (struct sockaddr *)&serv_addr, sizeof(serv_addr)) < 0)
     {
-        printf("\nConnection Failed \n");
         return -1;
     }
     // login form
@@ -120,6 +135,7 @@ int main(int argc, char const *argv[])
         }
         else if (strcmp(mode, "q\n") == 0)
         {
+
             printf("Good Bye\n");
             return 0;
         }
@@ -174,7 +190,6 @@ int main(int argc, char const *argv[])
                 FILE *fp;
                 fp = fopen(filenamepath, "r");
                 char file_length[1024] = {0};
-                char buffer[1024] = {0};
                 char file_content[1024] = {0};
                 if (fp == NULL)
                 {
@@ -187,7 +202,7 @@ int main(int argc, char const *argv[])
                 else
                 {
                     fseek(fp, 0, SEEK_END);
-                    long fsize = ftell(fp);
+                    int fsize = ftell(fp);
                     rewind(fp);
                     fread(file_content, 1, fsize, fp);
                     fclose(fp);
@@ -197,24 +212,13 @@ int main(int argc, char const *argv[])
                     send(sock, check, strlen(check), 0);
 
                     // send file size
-                    sprintf(file_length, "%ld", fsize);
+                    sprintf(file_length, "%d", fsize);
                     send(sock, file_length, sizeof(file_length), 0);
                     sleep(1);
 
                     // send file content
-                    long i = 0;
-                    
-                    for (long i = 0; i < fsize; i += 1024)
-                    {
-                        memset(buffer, 0, sizeof(buffer));
-                        sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
-                                                                                             : 1024,
-                                file_content + i);
-                        send(sock, buffer, sizeof(buffer), 0);
-                    }
-                    memset(buffer, 0, sizeof(buffer));
-                    memset(file_content, 0, sizeof(file_content));
-                    printf("[+]File data sent successfully.\n");
+
+                    sendFile(sock, fsize, file_content);
                 }
             }
             else if (strcmp(buffer2, "delete\n") == 0)
@@ -271,36 +275,40 @@ int main(int argc, char const *argv[])
                 inputString[strcspn(inputString, "\n")] = 0;
                 send(sock, inputString, strlen(inputString), 0);
                 //memset(inputString, 0, 100);
-                char file_length[1024] = {0};
-                char buffer[1024] = {0};
-                char file_content[1024] = {0};
-                char isfileready[2];
+                char file_length[1024] = {0}, buffer[1024] = {0}, file_content[1024] = {0}, isfileready[2];
                 read(sock, isfileready, 2);
                 int fileready = atoi(isfileready);
                 memset(isfileready, 0, 2);
                 if (fileready)
                 {
-                    /* code */
-
                     long fsize;
                     // recieve file size
                     read(sock, file_length, 1024);
                     fsize = strtol(file_length, NULL, 0);
-memset(file_length, 0, 1024);
+                    memset(file_length, 0, 1024);
                     // recieve file content
-                    for (long i = 0; i < fsize; i += 1024)
+                    long i = 0;
+                    while (i < fsize)
                     {
                         memset(buffer, 0, sizeof(buffer));
                         read(sock, buffer, 1024);
                         strcat(file_content, buffer);
+                        i += 1024;
                     }
-                        memset(buffer, 0, sizeof(buffer));
+
+                    memset(buffer, 0, sizeof(buffer));
 
                     FILE *fp;
+
                     fp = fopen(inputString, "w");
+                    if (fp == NULL)
+                    {
+                        perror("[-]Error in reading file.");
+                        exit(1);
+                    }
                     fprintf(fp, "%s", file_content);
-                        memset(file_content, 0, sizeof(file_content));
-                    
+                    memset(file_content, 0, sizeof(file_content));
+
                     fclose(fp);
                 }
                 else

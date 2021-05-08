@@ -302,6 +302,24 @@ int checkDownloadfile(int new_socket, char *findthisfile)
     return 0;
 }
 
+void sendFile(int new_socket,int fsize, char *file_content)
+{
+    char buffer[1024] = {0};
+    for (int i = 0; i < fsize; i += 1024)
+    {
+
+        sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
+                                                                             : 1024,
+                file_content + i);
+        send(new_socket, buffer, sizeof(buffer), 0);
+        memset(buffer, 0, sizeof(buffer));
+    }
+    memset(buffer, 0, sizeof(buffer));
+    memset(file_content, 0, sizeof(file_content));
+
+    printf("[+]File data sent successfully.\n");
+}
+
 int main(int argc, char const *argv[])
 {
     int server_fd, new_socket, valread;
@@ -502,7 +520,7 @@ int main(int argc, char const *argv[])
                     if (filecheck)
                     {
                         char file_content[1024] = {0};
-                        char buffer[1024] = {0};
+                        
                         char file_length[1024] = {0};
                         FILE *fp;
                         char pathfile[100] = "FILES/";
@@ -516,33 +534,20 @@ int main(int argc, char const *argv[])
                         }
 
                         fseek(fp, 0, SEEK_END);
-                        long fsize = ftell(fp);
+                        int fsize = ftell(fp);
                         rewind(fp);
 
                         fread(file_content, 1, fsize, fp);
                         fclose(fp);
 
                         // send file size
-                        sprintf(file_length, "%ld", fsize);
+                        sprintf(file_length, "%d", fsize);
                         send(new_socket, file_length, sizeof(file_length), 0);
                         sleep(1);
                         memset(file_length, 0, 100);
 
                         // send file content
-
-                        for (long i = 0; i < fsize; i += 1024)
-                        {
-
-                            sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
-                                                                                                 : 1024,
-                                    file_content + i);
-                            send(new_socket, buffer, sizeof(buffer), 0);
-                            memset(buffer, 0, sizeof(buffer));
-                        }
-                        memset(buffer, 0, sizeof(buffer));
-                        memset(file_content, 0, sizeof(file_content));
-
-                        printf("[+]File data sent successfully.\n");
+                        sendFile(new_socket,fsize, file_content);
                     }
                     else
                     {
