@@ -281,9 +281,9 @@ int main(int argc, char const *argv[])
                 memset(isfileready, 0, 2);
                 if (fileready)
                 {
-                    long fsize;
                     // recieve file size
                     read(sock, file_length, 1024);
+                    long fsize;
                     fsize = strtol(file_length, NULL, 0);
                     memset(file_length, 0, 1024);
                     // recieve file content
@@ -291,7 +291,11 @@ int main(int argc, char const *argv[])
                     while (i < fsize)
                     {
                         memset(buffer, 0, sizeof(buffer));
-                        read(sock, buffer, 1024);
+                        int valread = read(sock, buffer, 1024);
+                        if (valread < 1)
+                        {
+                            char *errorpesan = "error gan";
+                        }
                         strcat(file_content, buffer);
                         i += 1024;
                     }

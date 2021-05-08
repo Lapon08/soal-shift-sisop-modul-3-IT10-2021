@@ -130,8 +130,9 @@ void addtoDatabase(int new_socket, char *publisher, char *tahun_publikasi, char 
         FILE *fpr;
         fpr = fopen(tmp, "w");
         fprintf(fpr, "%s", file_content);
-        fclose(fpr);
         memset(file_content, 0, sizeof(file_content));
+        fclose(fpr);
+        
 
         FILE *fp;
         fp = fopen("files.tsv", "a+");
