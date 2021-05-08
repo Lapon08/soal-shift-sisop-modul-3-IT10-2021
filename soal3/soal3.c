@@ -90,7 +90,7 @@ void *routeF(void *arg)
       strcat(tofilenamepath, ekstensi);
       strcat(tofilenamepath, "/");
       strcat(tofilenamepath, filename);
-      
+
       // ngecek guis
       // printf("%s -> ", fromfilenmamepath);
       // printf("%s\n", tofilenamepath);
@@ -112,7 +112,6 @@ void *routeF(void *arg)
         printf("%s", message);
       }
     }
-
   }
   else
   {
@@ -129,7 +128,8 @@ void *routeF(void *arg)
 char f_name[2048];
 void listdir(const char *name)
 {
-  DIR *dir;struct dirent *entry;
+  DIR *dir;
+  struct dirent *entry;
 
   if (!(dir = opendir(name)))
   {
@@ -165,6 +165,10 @@ void listdir(const char *name)
 
 int main(int argc, char const *argv[])
 {
+  if (argc == 1)
+  {
+    exit(1);
+  }
 
   pthread_t tid[100];
   //  Jika mode -f
