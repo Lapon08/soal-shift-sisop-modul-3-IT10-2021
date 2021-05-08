@@ -7,7 +7,6 @@
 #include <arpa/inet.h>
 #define PORT 4444
 
-
 void readMessage(int new_socket)
 {
     char readmessage[1024] = {0};
@@ -118,7 +117,6 @@ int main(int argc, char const *argv[])
             // kirim kredensial
             send(sock, password, strlen(password), 0);
             memset(password, 0, 1024);
-
         }
         else if (strcmp(mode, "q\n") == 0)
         {
@@ -180,34 +178,44 @@ int main(int argc, char const *argv[])
                 char file_content[1024] = {0};
                 if (fp == NULL)
                 {
-                    perror("[-]Error in reading file.");
-                    exit(1);
+                    //send confirmation
+
+                    char *check = "0";
+                    send(sock, check, strlen(check), 0);
+                    printf("[-]Error in reading file.\n");
                 }
-
-                fseek(fp, 0, SEEK_END);
-                long fsize = ftell(fp);
-                rewind(fp);
-                fread(file_content, 1, fsize, fp);
-                fclose(fp);
-
-                // send file size
-                sprintf(file_length, "%ld", fsize);
-                send(sock, file_length, sizeof(file_length), 0);
-                sleep(1);
-
-                // send file content
-
-                for (long i = 0; i < fsize; i += 1024)
+                else
                 {
+                    fseek(fp, 0, SEEK_END);
+                    long fsize = ftell(fp);
+                    rewind(fp);
+                    fread(file_content, 1, fsize, fp);
+                    fclose(fp);
+
+                    //send confirmation
+                    char *check = "1";
+                    send(sock, check, strlen(check), 0);
+
+                    // send file size
+                    sprintf(file_length, "%ld", fsize);
+                    send(sock, file_length, sizeof(file_length), 0);
+                    sleep(1);
+
+                    // send file content
+                    long i = 0;
+                    
+                    for (long i = 0; i < fsize; i += 1024)
+                    {
+                        memset(buffer, 0, sizeof(buffer));
+                        sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
+                                                                                             : 1024,
+                                file_content + i);
+                        send(sock, buffer, sizeof(buffer), 0);
+                    }
                     memset(buffer, 0, sizeof(buffer));
-                    sprintf(buffer, "%.*s", fsize < 1024 ? fsize : abs(fsize - i) < 1024 ? abs(fsize - 1)
-                                                                                         : 1024,
-                            file_content + i);
-                    send(sock, buffer, sizeof(buffer), 0);
+                    memset(file_content, 0, sizeof(file_content));
+                    printf("[+]File data sent successfully.\n");
                 }
-
-                printf("[+]File data sent successfully.\n");
-
             }
             else if (strcmp(buffer2, "delete\n") == 0)
             {
@@ -221,7 +229,7 @@ int main(int argc, char const *argv[])
                 memset(iniinput, 0, 100);
                 char delet[10] = {0};
                 memset(delet, 0, 10);
-                // Read Database
+
                 read(sock, delet, 10);
                 printf("%s", delet);
                 memset(delet, 0, 10);
@@ -278,7 +286,7 @@ int main(int argc, char const *argv[])
                     // recieve file size
                     read(sock, file_length, 1024);
                     fsize = strtol(file_length, NULL, 0);
-
+memset(file_length, 0, 1024);
                     // recieve file content
                     for (long i = 0; i < fsize; i += 1024)
                     {
@@ -286,10 +294,13 @@ int main(int argc, char const *argv[])
                         read(sock, buffer, 1024);
                         strcat(file_content, buffer);
                     }
+                        memset(buffer, 0, sizeof(buffer));
 
                     FILE *fp;
                     fp = fopen(inputString, "w");
                     fprintf(fp, "%s", file_content);
+                        memset(file_content, 0, sizeof(file_content));
+                    
                     fclose(fp);
                 }
                 else
