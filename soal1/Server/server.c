@@ -24,6 +24,11 @@ int checkLogin(char *kredensial, char *password)
     FILE *fptr;
 
     fptr = fopen("akun.txt", "r+");
+    if (fptr == NULL)
+    {
+        perror("[-]Error in reading file.");
+        exit(1);
+    }
     char line[256];
     char user[1024] = {0};
     sprintf(user, "%s:%s", kredensial, password);
@@ -43,6 +48,11 @@ void runningLog(char *message)
 {
     FILE *fp;
     fp = fopen("running.log", "a+");
+    if (fp == NULL)
+    {
+        perror("[-]Error in reading file.");
+        exit(1);
+    }
     strtok(cookie, "\n");
     fprintf(fp, "%s (%s)\n", message, cookie);
     fclose(fp);
@@ -53,6 +63,11 @@ void registerAkun(char *kredensial, char *password)
 
     FILE *fptr;
     fptr = fopen("akun.txt", "a+");
+    if (fptr == NULL)
+    {
+      perror("[-]Error in reading file.");
+        exit(1);  
+    }
     fprintf(fptr, "%s:%s\n", kredensial, password);
     fclose(fptr);
 }
@@ -302,7 +317,7 @@ int checkDownloadfile(int new_socket, char *findthisfile)
     return 0;
 }
 
-void sendFile(int new_socket,int fsize, char *file_content)
+void sendFile(int new_socket, int fsize, char *file_content)
 {
     char buffer[1024] = {0};
     for (int i = 0; i < fsize; i += 1024)
@@ -520,7 +535,7 @@ int main(int argc, char const *argv[])
                     if (filecheck)
                     {
                         char file_content[1024] = {0};
-                        
+
                         char file_length[1024] = {0};
                         FILE *fp;
                         char pathfile[100] = "FILES/";
@@ -547,7 +562,7 @@ int main(int argc, char const *argv[])
                         memset(file_length, 0, 100);
 
                         // send file content
-                        sendFile(new_socket,fsize, file_content);
+                        sendFile(new_socket, fsize, file_content);
                     }
                     else
                     {
