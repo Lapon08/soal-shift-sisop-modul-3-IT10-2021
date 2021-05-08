@@ -167,28 +167,27 @@ void readDatabase()
 
         char *token = strtok(line[i], "\t");
 
-        strcpy(publisherbuku[i], token);
+        sprintf(publisherbuku[i],"%s", token);
         token = strtok(NULL, "\t");
-        strcpy(tahunpublishbuku[i], token);
+        sprintf(tahunpublishbuku[i], "%s",token);
         token = strtok(NULL, "\t");
-        strcpy(fullpath[i], token);
+        sprintf(fullpath[i],"%s", token);
 
-        strcpy(temp, fullpath[i]);
+        sprintf(temp,"%s", fullpath[i]);
         char *token2 = strtok(temp, ".");
-        strcpy(temp2, fullpath[i]);
+        sprintf(temp2,"%s", fullpath[i]);
         token2 = strtok(NULL, ".");
-        strcpy(ekstensi[i], token2);
+        sprintf(ekstensi[i],"%s", token2);
 
         char *token3 = strtok(temp, "/");
         token2 = strtok(NULL, "/");
-        strcpy(nama[i], token2);
+        sprintf(nama[i],"%s", token2);
         strtok(nama[i], "\n");
         strtok(ekstensi[i], "\n");
 
-        strcpy(namafull[i], nama[i]);
+        sprintf(namafull[i],"%s", nama[i]);
         strcat(namafull[i], ".");
         strcat(namafull[i], ekstensi[i]);
-        //printf("%d -> %s -> %s -> %s -> %s -> %s -> %s", i, namafull[i], line[i], publisherbuku[i], tahunpublishbuku[i], fullpath[i], ekstensi[i]);
         memset(line[i], 0, 500);
         i++;
         jumlahData++;
