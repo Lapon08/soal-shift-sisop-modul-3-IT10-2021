@@ -7,6 +7,22 @@
 # Soal 3
 ### Deskripsi
 Seorang mahasiswa bernama Alex sedang mengalami masa gabut. Di saat masa gabutnya, ia memikirkan untuk merapikan sejumlah file yang ada di laptopnya. Karena jumlah filenya terlalu banyak, Alex meminta saran ke Ayub. Ayub menyarankan untuk membuat sebuah program C agar file-file dapat dikategorikan. Program ini akan memindahkan file sesuai ekstensinya ke dalam folder sesuai ekstensinya yang folder hasilnya terdapat di working directory ketika program kategori tersebut dijalankan.
+
+Contoh apabila program dijalankan:
+```
+# Program soal3 terletak di /home/izone/soal3
+$ ./soal3 -f path/to/file1.jpg path/to/file2.c path/to/file3.zip
+#Hasilnya adalah sebagai berikut
+/home/izone
+|-jpg
+|--file1.jpg
+|-c
+|--file2.c
+|-zip
+|--file3.zip
+```
+
+
 ## Soal 3.a
 ### Deskripsi
 Program menerima opsi -f seperti contoh di atas, jadi pengguna bisa menambahkan argumen file yang bisa dikategorikan sebanyak yang diinginkan oleh pengguna. 
