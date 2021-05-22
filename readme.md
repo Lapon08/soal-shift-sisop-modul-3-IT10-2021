@@ -32,6 +32,7 @@ File 1 : Berhasil Dikategorikan (jika berhasil)
 File 2 : Sad, gagal :( (jika gagal)
 File 3 : Berhasil Dikategorikan
 ```
+### Penyelesaian
 ## Soal 3.b
 ### Deskripsi
 Program juga dapat menerima opsi -d untuk melakukan pengkategorian pada suatu directory. Namun pada opsi -d ini, user hanya bisa memasukkan input 1 directory saja, tidak seperti file yang bebas menginput file sebanyak mungkin. Contohnya adalah seperti ini:
@@ -45,6 +46,7 @@ Output yang dikeluarkan adalah seperti ini :
 Jika berhasil, print “Direktori sukses disimpan!”
 Jika gagal, print “Yah, gagal disimpan :(“
 ```
+### Penyelesaian
 ## Soal 3.c
 ### Deskripsi
 Selain menerima opsi-opsi di atas, program ini menerima opsi *, contohnya ada di bawah ini:
@@ -53,9 +55,12 @@ $ ./soal3 \*
 ```
 
 Opsi ini akan mengkategorikan seluruh file yang ada di working directory ketika menjalankan program C tersebut.
+### Penyelesaian
 ## Soal 3.d
 ### Deskripsi
 Semua file harus berada di dalam folder, jika terdapat file yang tidak memiliki ekstensi, file disimpan dalam folder “Unknown”. Jika file hidden, masuk folder “Hidden”.
+### Penyelesaian
 ## Soal 3.e
 ### Deskripsi
 Setiap 1 file yang dikategorikan dioperasikan oleh 1 thread agar bisa berjalan secara paralel sehingga proses kategori bisa berjalan lebih cepat.
+### Penyelesaian
