@@ -8,7 +8,12 @@
 ### Deskripsi
 Seorang mahasiswa bernama Alex sedang mengalami masa gabut. Di saat masa gabutnya, ia memikirkan untuk merapikan sejumlah file yang ada di laptopnya. Karena jumlah filenya terlalu banyak, Alex meminta saran ke Ayub. Ayub menyarankan untuk membuat sebuah program C agar file-file dapat dikategorikan. Program ini akan memindahkan file sesuai ekstensinya ke dalam folder sesuai ekstensinya yang folder hasilnya terdapat di working directory ketika program kategori tersebut dijalankan.
 ## Soal 3.a
+### Deskripsi
 ## Soal 3.b
+### Deskripsi
 ## Soal 3.c
+### Deskripsi
 ## Soal 3.d
+### Deskripsi
 ## Soal 3.e
+### Deskripsi
