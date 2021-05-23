@@ -960,11 +960,275 @@ Kemudian mengambil input user untuk matriks2 atau matriks B, kemudian disimpan s
    }
 ```
 
+Menghitung perkalian antara matriks A dan matriks B
+Inisiasi matriks hasil perkalian sebagai matriks result[r3][c3]
+```unsigned long long int i = 0, j = 0;
+   while (i < r3)
+   {
+      j = 0;
+      while (j < c3)
+      {
+         result[i][j] = 0;
+         j++;
+      }
+      i++;
+   }
+```
+
+Menghitung hasil perkalian antara matriks first[r1][c1] dengan second[r2][c2]
+```
+   unsigned long long int sum = 0;
+   char prompt5[100];unsigned long long int k =0;
+   i = 0, j = 0;
+   sprintf(prompt5, "\nMenghitung...\n");
+   printf("%s", prompt5);
+   while (i < r1)
+   {
+      j = 0;
+      while (j < c2)
+      {
+         k = 0;
+         while (k < c1)
+         {
+            sum += first[i][k] * second[k][j];
+            k++;
+         }
+         result[i][j] = sum;
+         sum = 0;
+         j++;
+      }
+      i++;
+   }
+```
+
+Menampilkan hasil perkalian matriks dengan memanggil fungsi display
+```
+    char *message = "Hasil";
+    display(result, message);
+```
+
+Untuk fungsi display adalah sebagai berikut
+```
+void display(unsigned long long int matrix[r3][c3], char *Messsage)
+{
+
+   char prompt[100] = {0};
+   sprintf(prompt, "\nOutput Matrix %s\n", Messsage);
+   printf("%s", prompt);
+   unsigned long long int i = 0, j = 0;
+   while (i < r3)
+   {
+      j = 0;
+      while (j < c3)
+      {
+         printf("%llu  ", matrix[i][j]);
+         if (j == c3 - 1)
+         {
+            printf("\n");
+         }
+         j++;
+      }
+      i++;
+   }
+}
+```
+
+Kemudian hasil perkalian matriks disimpan dalam shared memory agar hasil tersebut dapat diakses oleh program lain yaitu program soal2b
+Define key(nilai akses yang terkait dengan semaphore Id)
+```key_t key = 1337;``` 
+
+untuk mendapatkan id dari shared memory digunakan fungsi ```shmget()``` untuk mendapatkan akses ke shared memory segment dengan argument key, ukuran shared memory yaitu ukuran matriks result, dan argument flag untuk menentukan initial accesss permission(IPC_CREAT | 0666), dan menggunakan fungsi ```shmat()``` untuk meng-attach shared memory segment yang akan mereturn pointer, dan disimpan sebagai variable value.
+```
+   unsigned long long int *value;
+   unsigned long long int shmid = shmget(key, sizeof(result), IPC_CREAT | 0666);
+   value = shmat(shmid, NULL, 0);
+```
+
+Selanjutnya meng-copy matriks result ke shared memory dengan menggunakan fungsi ```memcpy()```
+```
+unsigned long long int *p = (unsigned long long int *)value;
+memcpy(p, result, 192);
+```
+
+kemudian men-detach shared memory segment yang ada pada address value
+```shmdt(value);```
+
 ## Soal 2.b
 ### Deskripsi
 Membuat program dengan menggunakan matriks output dari program sebelumnya (program soal2a.c) (Catatan!: gunakan shared memory). Kemudian matriks tersebut akan dilakukan perhitungan dengan matrix baru (input user) sebagai berikut contoh perhitungan untuk matriks yang a	da. Perhitungannya adalah setiap cel yang berasal dari matriks A menjadi angka untuk faktorial, lalu cel dari matriks B menjadi batas maksimal faktorialnya matri(dari paling besar ke paling kecil) (Catatan!: gunakan thread untuk perhitungan di setiap cel). 
 ### Penyelesaian
+Mendefine ukuran matriks r3xc3 yaitu 4x6, ukuran yang sama dengan hasil perkalian matriks dari program soal2a.
+```unsigned long long int r3 = 4, c3 = 6;```
 
+membuat struct args
+```
+struct args
+{
+    unsigned long long int i, j;
+};
+```
+
+Membuat variable global matriks A, matriks B, dan matriks hasil
+```unsigned long long int matrixA[4][6], matrixB[4][6], hasil[4][6];```
+
+Pada fungsi main, mengakses shared memory untuk mendapatkan hasil perkkalian matriks dari program sebelumnya yaitu program soal2a, kemudian matriks dari program sebelumnya disimpan sebagai matrixA
+```
+    key_t key = 1337;
+    unsigned long long int *value;
+    unsigned long long int shmid = shmget(key, 96, IPC_CREAT | 0666);
+    value = shmat(shmid, NULL, 0);
+
+    unsigned long long int *p = (unsigned long long int *)value;
+    memcpy(matrixA, p, 192);
+
+    shmdt(value);
+    shmctl(shmid, IPC_RMID, NULL);
+    char *message = "Matrix B";
+    display(matrixA, message);
+```
+selanjutnya mengubah permission dari shared memory segment menggunakan fungsi shmctl() dengan argument IPC_RMID untuk meremove shared memory segment.
+
+Menginisialisasi array untung menampung thread tid[r3][c3]
+```pthread_t tid[r3][c3];```
+
+Kemudian mengambil input user untuk matriks B 
+```
+    char prompt[100];
+    for (unsigned long long int i = 0; i < r3; ++i)
+    {
+        for (unsigned long long int j = 0; j < c3; ++j)
+        {
+            sprintf(prompt, "Masukkan B %llu %llu ", i + 1, j + 1);
+            printf("%s", prompt);
+            scanf("%llu", &matrixB[i][j]);
+        }
+        printf("\n");
+    }
+```
+
+Selanjutnya menghitung faktorial setiap cel dengan indeks yang sama dari matriks A dan matriks B dengan ketentuan
+If a >= b  -> a!/(a-b)!
+If b > a -> a!
+If 0 -> 0
+
+Untuk menghitung faktorial dengan ketentuan tersebut menggunakan thread. Dengan membuat thread baru menggunakan fungsi pthread_create() yang kemudian akan disimpan pada tid[r3][c3], thread yang dibuat tersebut akan dimulai dengan fungsi calculation yang merupakan fungsi untuk menghitung faktorial tiap cel, dan fungsi calculation tersebut membutuhkan arguman index yang diperoleh dari ```struct args``` yang sudah dibuat sebelumnya.
+```
+unsigned long long int i = 0, j = 0;
+    while (i < r3)
+    {
+        j = 0;
+        while (j < c3)
+        {
+            struct args *index = (struct args *)malloc(sizeof(struct args));
+            index->i = i, index->j = j;
+            pthread_create(&tid[i][j], NULL, &calculation, (void *)index);
+            j++;
+        }
+        i++;
+    }
+```
+
+Untuk fungsi calculation adalah sebagai berikut:
+Jika angka pada cel salah satu matriks bernilai nol maka hasilnya adalah 0, sesuai dengan ketentuan If 0 -> 0
+```
+    if (matrixA[i][j] == 0 || matrixB[i][j] == 0)
+    {
+        hasil[i][j] = 0;
+    }
+```
+Sedangkan jika angka pada cel matriks A kurang dari angka pada cel(dengan indeks yang sama) dari mariks B maka akan menghitung factorial angka pada cel matriks A, sesuai dengan ketentuan If b > a -> a!
+```
+    else if (matrixA[i][j] < matrixB[i][j])
+    {
+        unsigned long long int temp = 1;
+        for (unsigned long long int k = 1; k <= matrixA[i][j]; k++)
+        {
+            temp = temp * k;
+        }
+        hasil[i][j] = temp;
+    }
+```
+Dan jika angka pada cel matriks A lebih dari atau sama dengan angka pada cel matriks B maka hasil perhitungan adalah faktorial angka dari matriks A dibagi dengan faktorial dari angka matriks A dikurangi angka dari matriks B, sesuai dengan ketentuan If a >= b  -> a!/(a-b)!
+Untuk menghitung  faktorial angka dari matriks A
+```
+        unsigned long long int temp = 1;
+        for (unsigned long long int k = 1; k <= matrixA[i][j]; k++)
+        {
+            temp = temp * k;
+        }
+```
+Untuk menghitung factorial dari angka matriks A dikurangi angka dari matriks B
+```
+        unsigned long long int temp2 = 1;
+        for (unsigned long long int l = 1; l <= matrixA[i][j] - matrixB[i][j]; l++)
+        {
+            temp2 = temp2 * l;
+        }
+```
+Maka keseluruhan perhitungan adalah seperti berikut
+```
+    else if (matrixA[i][j] >= matrixB[i][j])
+    {
+        unsigned long long int temp = 1;
+        for (unsigned long long int k = 1; k <= matrixA[i][j]; k++)
+        {
+            temp = temp * k;
+        }
+        unsigned long long int temp2 = 1;
+        for (unsigned long long int l = 1; l <= matrixA[i][j] - matrixB[i][j]; l++)
+        {
+            temp2 = temp2 * l;
+        }
+        unsigned long long int hasilCalculation = temp / temp2;
+        hasil[i][j] = hasilCalculation;
+    }
+
+}
+```
+
+Kemudian thread di-join menggunakan fungsi pthread_join()
+```
+    while (i < r3)
+    {
+        j = 0;
+        while (j < c3)
+        {
+            pthread_join(tid[i][j], NULL);
+            j++;
+        }
+        i++;
+    }
+```
+Selanjutnya hasil perhitungan tersebut ditampilkan dengan memanggil fungsi display
+```
+    char *message2 = "Hasil";
+    display(hasil, message2);
+```
+Fungsi display untuk menampilkan matriks tersebut adalah sebagai berikut
+```
+void display(unsigned long long int matrix[r3][c3], char *Messsage)
+{
+
+    char prompt[100] = {0};
+    sprintf(prompt, "\nOutput Matrix %s\n", Messsage);
+    printf("%s", prompt);
+    unsigned long long int i = 0, j = 0;
+    while (i < r3)
+    {
+        j = 0;
+        while (j < c3)
+        {
+            printf("%llu  ", matrix[i][j]);
+            if (j == c3 - 1)
+            {
+                printf("\n");
+            }
+            j++;
+        }
+        i++;
+    }
+}
+```
 ## Soal 2.c
 ### Deskripsi
 Karena takut lag dalam pengerjaannya membantu Loba, Crypto juga membuat program (soal2c.c) untuk mengecek 5 proses teratas apa saja yang memakan resource komputernya dengan command “ps aux | sort -nrk 3,3 | head -5” (Catatan!: Harus menggunakan IPC Pipes)
