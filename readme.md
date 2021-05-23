@@ -1304,7 +1304,7 @@ Soal 2 b
 
 Soal 2 c
 
-![Gambar](soal2/soal2.c.png)
+![Gambar](soal2/soal2c.png)
 
 # Soal 3
 ### Deskripsi
