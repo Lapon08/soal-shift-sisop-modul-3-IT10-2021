@@ -5,9 +5,6 @@
 - Christopher Benedict              05311840000024
 
 # Table Of Content
-- [soal-shift-sisop-modul-3-IT10-2021](#soal-shift-sisop-modul-3-it10-2021)
-  * [Anggota Kelompok](#anggota-kelompok)
-- [Table Of Content](#table-of-content)
 - [Soal 1](#soal-1)
     + [Deskripsi](#deskripsi)
   * [Soal 1.a](#soal-1a)
