@@ -917,6 +917,48 @@ Crypto (kamu) adalah teman Loba. Suatu pagi, Crypto melihat Loba yang sedang kew
 ### Deskripsi
 Membuat program perkalian matrix (4x3 dengan 3x6) dan menampilkan hasilnya. Matriks nantinya akan berisi angka 1-20 (tidak perlu dibuat filter angka).
 ### Penyelesaian
+Pertama, mendefine ukuran matriks1 r1xc1 = 4x3, matriks2 r2xc2 = 3x6, matriks3 hasil perkalian r3xc3 = 4x6
+```
+unsigned long long int r1 = 4, c1 = 3;
+unsigned long long int r2 = 3, c2 = 6;
+unsigned long long int r3 = 4, c3 = 6;
+```
+
+Pada fungsi main terdapat beberapa fungsi yaitu untuk menginputkan matriks1 dan matriks2, mengalikan kedua matriks yang sudah diinputkan, dan menampilkan hasil perkalian matriks.
+Mendefine matriks1 sebagai first[r1][c2], matriks2 sebagai second[r2][c2], dan matriks3 sebagai result[r3][c3]
+``` unsigned long long int first[r1][c1], second[r2][c2], result[r3][c3]; ```
+
+Selanjutnya mengambil input user untuk matriks1 atau matriks A, kemudian disimpan sebagai matriks first[r1][c1],
+```
+   sprintf(prompt, "Matrix ke A\n");
+   printf("%s", prompt);
+   for (unsigned long long int i = 0; i < r1; ++i)
+   {
+      for (unsigned long long int j = 0; j < c1; ++j)
+      {
+         sprintf(prompt2, "Masukkan A %llu %llu ", i + 1, j + 1);
+         printf("%s", prompt2);
+         scanf("%llu", &first[i][j]);
+      }
+      printf("\n");
+   }
+```
+
+Kemudian mengambil input user untuk matriks2 atau matriks B, kemudian disimpan sebagai matriks second[r2][c2]
+```
+   sprintf(prompt, "Matrix ke B\n");
+   printf("%s", prompt);
+   for (unsigned long long int i = 0; i < r2; ++i)
+   {
+      for (unsigned long long int j = 0; j < c2; ++j)
+      {
+         sprintf(prompt4, "Masukkan B %llu %llu ", i + 1, j + 1);
+         printf("%s", prompt4);
+         scanf("%llu", &second[i][j]);
+      }
+      printf("\n");
+   }
+```
 
 ## Soal 2.b
 ### Deskripsi
