@@ -1233,7 +1233,64 @@ void display(unsigned long long int matrix[r3][c3], char *Messsage)
 ### Deskripsi
 Karena takut lag dalam pengerjaannya membantu Loba, Crypto juga membuat program (soal2c.c) untuk mengecek 5 proses teratas apa saja yang memakan resource komputernya dengan command “ps aux | sort -nrk 3,3 | head -5” (Catatan!: Harus menggunakan IPC Pipes)
 ### Penyelesaian
+Disini kami menggunakan fork untuk membuat proses baru. Asumsi kami output dari command proses pertama akan dikirimkan ke proses kedua lalu digunakan untuk input dari command proses kedua setelah itu output dari proses kedua dikirimkan ke proses ketiga untuk dijadikan input command proses ketiga. Dalam mengirimkan output tersebut dibutuhkan pipe. Disini kami menggunakan 2 pipe. 
+```
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
+int main(){
+    int link[2],link2[2];
+    int saved_stdout;
+    pipe(link);pipe(link2);
+
+    if (fork() > 0) {
+        exit(EXIT_SUCCESS);
+    }
+
+    if (fork() == 0) {
+        ...
+    }
+
+    if (fork() == 0) {
+        ...
+    }
+    
+    if (fork()== 0) {
+        ...
+    }
+
+}
+```
+Kita masuk ke proses yang pertama. Dimana menggunakan dup2() untuk memindahkan file deskriptor untuk STDOUT ke pipe yaitu link[1]. Lalu menutup pipe yang tidak dibutuhkan. Tingal mengeksekusi command ```ps aux```. Dimana outputnya nanti akan dikirimkan ke pipe link
+```
+    if (fork() == 0) {
+        dup2(link[1],STDOUT_FILENO);
+        // close
+        close(link[0]);close(link2[0]);close(link2[1]);
+        execlp("/bin/ps","ps", "aux", NULL);
+    }
+```
+Kita masuk ke proses yang kedua. Menggunakan dup2() untuk memindahkan file deskriptor STDIN ke pipe link[0]. Gunanya untuk melakukan read output dari pipe link[1]. Lalu dilakukan juga dup2() untuk memindahkan file deskriptor STDOUT ke pipe link2[1]. Jangan lupa untuk melakukan close ke pipe yang tidak diperlukan. Tinggal mengeksekusi command ```sort -nrk 3,3```. Output akan dikirimkan ke pipe link2[1].
+```
+    if (fork() == 0) {
+        dup2(link[0],STDIN_FILENO);
+        // close
+        close(link[1]);close(link2[0]);
+        dup2(link2[1],STDOUT_FILENO);
+        execlp("/bin/sort","sort", "-nrk","3,3", NULL);
+    }
+```
+Masuk ke proses ketiga. Kita melakukan dup2() untuk mengubah file deskriptor STDIN ke link2[0] untuk melakukan read output dari proses kedua. Setelah itu tinggal close pipe yang tidak digunakan. Eksekusi perintah head -5 maka akan muncul ke terminal.
+```
+    if (fork()== 0) {
+        dup2(link2[0],STDIN_FILENO);
+        // close
+        close(link[1]);close(link[0]);close(link2[1]);
+        execlp("/bin/head","head", "-5", NULL);
+    }
+```
 ## Kendala
 Tidak ada
 ## Screenshot
